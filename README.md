@@ -8,7 +8,9 @@
 
 An ESP32-based autonomous flight-control firmware that receives AI or voice-driven commands over MQTT, drives a BLDC motor via ESC, actuates flight control surfaces (rudder, elevator, aileron), and continuously publishes live telemetry/status.
 
-![System Overview](docs/images/zara-system-overview.svg)
+![Drone Control Architecture](images/architecture.png)
+
+![AeroSense Layered Architecture](images/zara_model_iot_overview.png)
 
 ## Table of Contents
 
@@ -44,6 +46,10 @@ The firmware in `zara_flight_controller.ino` turns an ESP32 into a networked fli
 - Applies automatic failsafe shutdown on connectivity failures.
 
 ## Complete Working (End-to-End)
+
+![End-to-End System Execution Flow](images/end-to-end_workflow.png)
+
+![Voice Command Processing Pipeline](images/voice_pipeline.png)
 
 ### 1) Boot and Initialization
 
@@ -135,9 +141,11 @@ flowchart TD
 
 ### C) Control Surfaces Quick Visual
 
-![Control Surfaces](docs/images/zara-control-surfaces.svg)
+![Control Surfaces Working Test](images/working_test.png)
 
 ## Hardware and Pin Mapping
+
+![Hardware Components Overview](images/ZARA-model.png)
 
 | Function | GPIO | Notes |
 |---|---|---|
@@ -333,10 +341,13 @@ mosquitto_pub -h <HOST> -p 8883 -u <USER> -P <PASS> --capath /etc/ssl/certs -t z
 .
 ├── README.md
 ├── zara_flight_controller.ino
-└── docs/
-	 └── images/
-		  ├── zara-system-overview.svg
-		  └── zara-control-surfaces.svg
+└── images/
+  ├── architecture.png
+  ├── end-to-end_workflow.png
+  ├── voice_pipeline.png
+  ├── zara_model_iot_overview.png
+  ├── ZARA-model.png
+  └── working_test.png
 ```
 
 ## Current Limitations and Improvements

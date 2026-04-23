@@ -6,11 +6,11 @@
 ![Security](https://img.shields.io/badge/Security-TLS%20(8883)-0A7E3B)
 ![Language](https://img.shields.io/badge/Language-C%2B%2B-00599C?logo=c%2B%2B&logoColor=white)
 
+
+![Drone Control Architecture](images/zara-overview.png)
+
 An ESP32-based autonomous flight-control firmware that receives AI or voice-driven commands over MQTT, drives a BLDC motor via ESC, actuates flight control surfaces (rudder, elevator, aileron), and continuously publishes live telemetry/status.
 
-![Drone Control Architecture](images/architecture.png)
-
-![AeroSense Layered Architecture](images/zara_model_iot_overview.png)
 
 ## Table of Contents
 
@@ -86,6 +86,8 @@ Incoming JSON from `zara/flight/control`:
 
 ## System Architecture
 
+![Drone Control Architecture](images/architecture.png)
+
 | Layer | Component | Responsibility |
 |---|---|---|
 | AI/Control | Gemini or command backend | Generates high-level flight commands |
@@ -145,7 +147,7 @@ flowchart TD
 
 ## Hardware and Pin Mapping
 
-![Hardware Components Overview](images/ZARA-model.png)
+![Hardware Components Overview](images/zara_model_iot_overview.png)
 
 | Function | GPIO | Notes |
 |---|---|---|

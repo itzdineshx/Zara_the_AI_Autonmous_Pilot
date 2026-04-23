@@ -94,43 +94,43 @@ Incoming JSON from `zara/flight/control`:
 
 ```mermaid
 flowchart LR
-	 A[AI Backend or Voice Agent] -->|Publish JSON command| B[MQTT Broker\nHiveMQ Cloud]
-	 B -->|Topic: zara/flight/control| C[ESP32 Zara Flight Controller]
+  A["AI Backend or Voice Agent"] -->|Publish JSON command| B["MQTT Broker<br/>HiveMQ Cloud"]
+  B -->|Topic: zara/flight/control| C["ESP32 Zara Flight Controller"]
 
-	 C --> D[ESC PWM Output\nGPIO 5 -> BLDC Motor]
-	 C --> E[Rudder Servo\nGPIO 18]
-	 C --> F[Elevator Servo\nGPIO 19]
-	 C --> G[Aileron Servo\nGPIO 21]
-	 C --> H[Built-in LED\nGPIO 2]
+  C --> D["ESC PWM Output<br/>GPIO 5 to BLDC Motor"]
+  C --> E["Rudder Servo<br/>GPIO 18"]
+  C --> F["Elevator Servo<br/>GPIO 19"]
+  C --> G["Aileron Servo<br/>GPIO 21"]
+  C --> H["Built-in LED<br/>GPIO 2"]
 
-	 C -->|Publish JSON status\nTopic: zara/flight/status| B
-	 B --> A
+  C -->|Publish JSON status<br/>Topic: zara/flight/status| B
+  B --> A
 ```
 
 ### B) Firmware Control Flow Diagram
 
 ```mermaid
 flowchart TD
-	 S[setup()] --> I1[Init serial, IDs, LED]
-	 I1 --> I2[Init ESC PWM]
-	 I2 --> I3[Init servos and center surfaces]
-	 I3 --> I4[Arm ESC with motor OFF]
-	 I4 --> I5[Configure MQTT/TLS]
-	 I5 --> L[loop()]
+  S["Setup"] --> I1["Init serial, IDs, LED"]
+  I1 --> I2["Init ESC PWM"]
+  I2 --> I3["Init servos and center surfaces"]
+  I3 --> I4["Arm ESC with motor OFF"]
+  I4 --> I5["Configure MQTT and TLS"]
+  I5 --> L["Main loop"]
 
-	 L --> W{WiFi connected?}
-	 W -- No --> WF[Retry WiFi + apply failsafe]
-	 WF --> L
-	 W -- Yes --> M{MQTT connected?}
-	 M -- No --> MF[Retry MQTT + apply failsafe]
-	 MF --> L
-	 M -- Yes --> P[mqttClient.loop()]
-	 P --> C{Incoming control message?}
-	 C -- No --> L
-	 C -- Yes --> J[Parse JSON + resolve intent]
-	 J --> E[Execute actuator command]
-	 E --> ST[Publish status JSON]
-	 ST --> L
+  L --> W{"WiFi connected"}
+  W -- No --> WF["Retry WiFi and apply failsafe"]
+  WF --> L
+  W -- Yes --> M{"MQTT connected"}
+  M -- No --> MF["Retry MQTT and apply failsafe"]
+  MF --> L
+  M -- Yes --> P["Run MQTT client loop"]
+  P --> C{"Incoming control message"}
+  C -- No --> L
+  C -- Yes --> J["Parse JSON and resolve intent"]
+  J --> E["Execute actuator command"]
+  E --> ST["Publish status JSON"]
+  ST --> L
 ```
 
 ### C) Control Surfaces Quick Visual

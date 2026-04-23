@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">Zara System Overview</title>
+  <desc id="desc">Architecture overview for AI backend, MQTT broker, ESP32 controller, and actuators.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b1f3a"/>
+      <stop offset="100%" stop-color="#153f72"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.08"/>
+    </linearGradient>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#9ed0ff"/>
+    </marker>
+  </defs>
+
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <circle cx="200" cy="80" r="220" fill="#2e7bd9" opacity="0.18"/>
+  <circle cx="1120" cy="660" r="260" fill="#4fb0ff" opacity="0.15"/>
+
+  <text x="640" y="62" text-anchor="middle" fill="#ffffff" font-family="Verdana, sans-serif" font-size="34" font-weight="700">
+    Zara Autonomous Pilot - System Architecture
+  </text>
+
+  <g>
+    <rect x="90" y="190" rx="18" ry="18" width="250" height="120" fill="url(#card)" stroke="#9ed0ff" stroke-width="2"/>
+    <text x="215" y="238" text-anchor="middle" fill="#ffffff" font-family="Verdana, sans-serif" font-size="24" font-weight="700">AI Backend</text>
+    <text x="215" y="272" text-anchor="middle" fill="#cde8ff" font-family="Verdana, sans-serif" font-size="16">Gemini / Voice Agent</text>
+  </g>
+
+  <g>
+    <rect x="435" y="190" rx="18" ry="18" width="250" height="120" fill="url(#card)" stroke="#9ed0ff" stroke-width="2"/>
+    <text x="560" y="238" text-anchor="middle" fill="#ffffff" font-family="Verdana, sans-serif" font-size="24" font-weight="700">MQTT Broker</text>
+    <text x="560" y="272" text-anchor="middle" fill="#cde8ff" font-family="Verdana, sans-serif" font-size="16">HiveMQ Cloud TLS :8883</text>
+  </g>
+
+  <g>
+    <rect x="780" y="165" rx="18" ry="18" width="360" height="170" fill="url(#card)" stroke="#9ed0ff" stroke-width="2"/>
+    <text x="960" y="222" text-anchor="middle" fill="#ffffff" font-family="Verdana, sans-serif" font-size="26" font-weight="700">ESP32 Flight Controller</text>
+    <text x="960" y="258" text-anchor="middle" fill="#cde8ff" font-family="Verdana, sans-serif" font-size="16">Sub: zara/flight/control</text>
+    <text x="960" y="286" text-anchor="middle" fill="#cde8ff" font-family="Verdana, sans-serif" font-size="16">Pub: zara/flight/status</text>
+  </g>
+
+  <g>
+    <rect x="815" y="420" rx="14" ry="14" width="215" height="90" fill="url(#card)" stroke="#9ed0ff" stroke-width="2"/>
+    <text x="922" y="455" text-anchor="middle" fill="#ffffff" font-family="Verdana, sans-serif" font-size="20" font-weight="700">ESC + BLDC</text>
+    <text x="922" y="483" text-anchor="middle" fill="#cde8ff" font-family="Verdana, sans-serif" font-size="14">GPIO5 PWM</text>
+  </g>
+
+  <g>
+    <rect x="1055" y="390" rx="14" ry="14" width="170" height="70" fill="url(#card)" stroke="#9ed0ff" stroke-width="2"/>
+    <text x="1140" y="432" text-anchor="middle" fill="#ffffff" font-family="Verdana, sans-serif" font-size="18" font-weight="700">Rudder</text>
+  </g>
+
+  <g>
+    <rect x="1055" y="480" rx="14" ry="14" width="170" height="70" fill="url(#card)" stroke="#9ed0ff" stroke-width="2"/>
+    <text x="1140" y="522" text-anchor="middle" fill="#ffffff" font-family="Verdana, sans-serif" font-size="18" font-weight="700">Elevator</text>
+  </g>
+
+  <g>
+    <rect x="1055" y="570" rx="14" ry="14" width="170" height="70" fill="url(#card)" stroke="#9ed0ff" stroke-width="2"/>
+    <text x="1140" y="612" text-anchor="middle" fill="#ffffff" font-family="Verdana, sans-serif" font-size="18" font-weight="700">Aileron</text>
+  </g>
+
+  <line x1="340" y1="250" x2="435" y2="250" stroke="#9ed0ff" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="685" y1="230" x2="780" y2="230" stroke="#9ed0ff" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="780" y1="285" x2="685" y2="285" stroke="#67f0c8" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <line x1="960" y1="335" x2="922" y2="420" stroke="#9ed0ff" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="1000" y1="335" x2="1105" y2="390" stroke="#9ed0ff" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="1020" y1="335" x2="1105" y2="480" stroke="#9ed0ff" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="1040" y1="335" x2="1105" y2="570" stroke="#9ed0ff" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <text x="386" y="238" fill="#d9efff" font-family="Verdana, sans-serif" font-size="13">Control JSON</text>
+  <text x="706" y="273" fill="#b8ffe9" font-family="Verdana, sans-serif" font-size="13">Status JSON</text>
+
+  <text x="640" y="690" text-anchor="middle" fill="#d6ebff" font-family="Verdana, sans-serif" font-size="14">
+    MQTT topics: zara/flight/control and zara/flight/status
+  </text>
+</svg>

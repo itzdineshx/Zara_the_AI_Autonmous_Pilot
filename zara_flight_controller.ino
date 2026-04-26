@@ -42,8 +42,8 @@ constexpr uint16_t ESC_SPIN_US = 1300;
 constexpr uint16_t ESC_START_BOOST_US = 1450;
 constexpr uint16_t ESC_START_BOOST_MS = 350;
 constexpr uint16_t ESC_ARM_DELAY_MS = 2500;
-constexpr uint16_t ENGINE_RAMP_STEP_US = 15;
-constexpr uint16_t ENGINE_RAMP_INTERVAL_MS = 20;
+constexpr uint16_t ENGINE_RAMP_STEP_US = 20;
+constexpr uint16_t ENGINE_RAMP_DELAY_MS = 20;
 
 // Control surfaces
 constexpr uint8_t RUDDER_PIN = 18;
@@ -76,7 +76,6 @@ bool engineOn = false;
 bool enginePwmReady = false;
 bool controlSurfacesReady = false;
 uint16_t enginePulseUs = ESC_STOP_US;
-uint16_t engineTargetPulseUs = ESC_STOP_US;
 int throttleLevel = THROTTLE_MIN_LEVEL;
 bool wifiConnectionLogged = false;
 bool mqttConnectionLogged = false;
@@ -84,7 +83,6 @@ char mqttClientId[40] = {0};
 
 unsigned long lastWifiAttemptMs = 0;
 unsigned long lastMqttAttemptMs = 0;
-unsigned long lastEngineRampMs = 0;
 
 void publishStatus(const char* status) {
   StaticJsonDocument<256> doc;
@@ -93,7 +91,6 @@ void publishStatus(const char* status) {
   doc["engine_on"] = engineOn;
   doc["throttle_level"] = throttleLevel;
   doc["engine_signal_us"] = enginePulseUs;
-  doc["engine_target_us"] = engineTargetPulseUs;
   doc["control_surfaces_ready"] = controlSurfacesReady;
   doc["uptime_ms"] = millis();
 
@@ -142,36 +139,33 @@ void writeEscPulseUs(uint16_t pulseUs) {
 #endif
 }
 
-void requestEnginePulseUs(uint16_t targetPulseUs) {
-  engineTargetPulseUs = clampEscPulseUs(targetPulseUs);
-  lastEngineRampMs = millis() - ENGINE_RAMP_INTERVAL_MS;
-}
-
-void processEngineRamp() {
+void rampEscPulseUs(uint16_t targetPulseUs) {
   if (!enginePwmReady) {
     return;
   }
 
-  if (enginePulseUs == engineTargetPulseUs) {
+  uint16_t currentPulseUs = clampEscPulseUs(enginePulseUs);
+  const uint16_t clampedTargetPulseUs = clampEscPulseUs(targetPulseUs);
+
+  if (currentPulseUs == clampedTargetPulseUs) {
+    writeEscPulseUs(clampedTargetPulseUs);
+    enginePulseUs = clampedTargetPulseUs;
     return;
   }
 
-  const unsigned long now = millis();
-  if (now - lastEngineRampMs < ENGINE_RAMP_INTERVAL_MS) {
-    return;
+  while (currentPulseUs != clampedTargetPulseUs) {
+    if (currentPulseUs < clampedTargetPulseUs) {
+      const uint32_t nextPulseUs = static_cast<uint32_t>(currentPulseUs) + ENGINE_RAMP_STEP_US;
+      currentPulseUs = static_cast<uint16_t>(nextPulseUs > clampedTargetPulseUs ? clampedTargetPulseUs : nextPulseUs);
+    } else {
+      const int nextPulseUs = static_cast<int>(currentPulseUs) - static_cast<int>(ENGINE_RAMP_STEP_US);
+      currentPulseUs = static_cast<uint16_t>(nextPulseUs < static_cast<int>(clampedTargetPulseUs) ? clampedTargetPulseUs : nextPulseUs);
+    }
+
+    writeEscPulseUs(currentPulseUs);
+    enginePulseUs = currentPulseUs;
+    delay(ENGINE_RAMP_DELAY_MS);
   }
-
-  lastEngineRampMs = now;
-
-  if (enginePulseUs < engineTargetPulseUs) {
-    const uint32_t nextPulseUs = static_cast<uint32_t>(enginePulseUs) + ENGINE_RAMP_STEP_US;
-    enginePulseUs = static_cast<uint16_t>(nextPulseUs > engineTargetPulseUs ? engineTargetPulseUs : nextPulseUs);
-  } else {
-    const int nextPulseUs = static_cast<int>(enginePulseUs) - static_cast<int>(ENGINE_RAMP_STEP_US);
-    enginePulseUs = static_cast<uint16_t>(nextPulseUs < static_cast<int>(engineTargetPulseUs) ? engineTargetPulseUs : nextPulseUs);
-  }
-
-  writeEscPulseUs(enginePulseUs);
 }
 
 int clampThrottleLevel(int level) {
@@ -280,7 +274,7 @@ void setEngineState(bool enabled, int requestedPulseUs = -1) {
   if (!enabled) {
     engineOn = false;
     throttleLevel = THROTTLE_MIN_LEVEL;
-    requestEnginePulseUs(ESC_STOP_US);
+    rampEscPulseUs(ESC_STOP_US);
     return;
   }
 
@@ -299,7 +293,17 @@ void setEngineState(bool enabled, int requestedPulseUs = -1) {
 
   throttleLevel = clampThrottleLevel(effectiveThrottleLevel);
   engineOn = true;
-  requestEnginePulseUs(targetPulseUs);
+
+  const uint16_t startPulseUs = targetPulseUs < ESC_START_BOOST_US ? ESC_START_BOOST_US : targetPulseUs;
+  rampEscPulseUs(startPulseUs);
+
+  if (startPulseUs > targetPulseUs) {
+    delay(ESC_START_BOOST_MS);
+    rampEscPulseUs(targetPulseUs);
+  }
+
+  enginePulseUs = targetPulseUs;
+  writeEscPulseUs(enginePulseUs);
 }
 
 void setThrottleLevel(int level, bool autoStart = true) {
@@ -318,7 +322,8 @@ void setThrottleLevel(int level, bool autoStart = true) {
   }
 
   if (engineOn) {
-    requestEnginePulseUs(throttleLevelToPulseUs(throttleLevel));
+    enginePulseUs = throttleLevelToPulseUs(throttleLevel);
+    rampEscPulseUs(enginePulseUs);
   }
 }
 
@@ -346,9 +351,9 @@ void applyEngineFailsafe(const char* reason) {
     return;
   }
 
-  setEngineState(false);
+  engineOn = false;
+  throttleLevel = THROTTLE_MIN_LEVEL;
   enginePulseUs = ESC_STOP_US;
-  engineTargetPulseUs = ESC_STOP_US;
   writeEscPulseUs(enginePulseUs);
   centerControlSurfaces();
   Serial.print("[ENGINE] FAILSAFE OFF: ");
@@ -531,7 +536,10 @@ void handleControlMessage(const JsonDocument& doc) {
   }
 
   if (strcmp(action, "emergency_stop") == 0 || isEmergencyStopCommand(normalizedCommand)) {
-    setEngineState(false);
+    engineOn = false;
+    throttleLevel = THROTTLE_MIN_LEVEL;
+    enginePulseUs = ESC_STOP_US;
+    writeEscPulseUs(enginePulseUs);
     centerControlSurfaces();
     Serial.println("[SAFETY] EMERGENCY STOP");
     publishStatus("emergency_stop");
@@ -692,7 +700,6 @@ void setup() {
 void loop() {
   ensureWifiConnected();
   ensureMqttConnected();
-  processEngineRamp();
 
   if (mqttClient.connected()) {
     if (!mqttClient.loop()) {
